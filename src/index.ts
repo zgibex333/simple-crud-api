@@ -1,54 +1,63 @@
-import http from "node:http";
-import url from "node:url";
+import cluster, { Worker } from "node:cluster";
+import os from "os";
+import http from "http";
+import { redirectClient } from "./client";
+import { serverHandler } from "./serverHandler";
 
-import {
-  createUser,
-  deleteUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-} from "./controllers/usersController";
-import { validateUUID } from "./utils/validateUUID";
+const PORT = Number(process.env.PORT) || 4000;
 
-const PORT = process.env.PORT || 3003;
-
-const server = http.createServer(async (req, res) => {
-  // get Users
-  if (req.url === "/api/users" && req.method === "GET") {
-    getAllUsers(req, res);
-  }
-  // get single User
-  else if (req.url?.substring(0, 10) === "/api/users" && req.method === "GET") {
-    getUserById(req, res);
-  }
-  // create User
-  else if (req.url === "/api/users" && req.method === "POST") {
-    createUser(req, res);
-  }
-  // update User
-  else if (req.url?.substring(0, 10) === "/api/users" && req.method === "PUT") {
-    updateUser(req, res);
-  }
-  // delete user
-  else if (
-    req.url?.substring(0, 10) === "/api/users" &&
-    req.method === "DELETE"
-  ) {
-    deleteUser(req, res);
-  }
-  // default error
-  else {
-    res.writeHead(404, "NOT FOUND", {
-      "Content-Type": "application/json",
+function start() {
+  const isMulti = process?.argv[2]?.split("=")[1] === "true";
+  const workers: { worker: Worker; pid: number | undefined; port: number }[] =
+    [];
+  let firstPort = PORT;
+  if (isMulti) {
+    if (cluster.isPrimary) {
+      for (let i = 0; i < os.cpus().length - 1; i++) {
+        const worker = cluster.fork({ WORKER_PORT: ++firstPort });
+        workers.push({ worker, pid: worker.process.pid, port: firstPort });
+        worker.on("exit", () => {
+          const deadWorkerIndex = workers.findIndex(
+            (item) => item.pid === worker.process.pid
+          );
+          const deadWorkerPort = workers[deadWorkerIndex].port;
+          const newWorker = cluster.fork({
+            WORKER_PORT: deadWorkerPort,
+          });
+          workers[deadWorkerIndex] = {
+            worker: newWorker,
+            pid: newWorker.process.pid,
+            port: deadWorkerPort,
+          };
+        });
+        worker.on("message", (data) => {
+          workers.forEach((item) => {
+            item.worker.send(data);
+          });
+        });
+      }
+      const server = http.createServer((req, res) =>
+        redirectClient(req, res, PORT)
+      );
+      server.listen(PORT, () => {
+        console.log(`load balancer server is listening ${PORT} port`);
+      });
+    }
+    if (cluster.isWorker) {
+      const { WORKER_PORT } = process.env;
+      if (WORKER_PORT) {
+        const workerServer = http.createServer(serverHandler);
+        workerServer.listen(Number(WORKER_PORT), () => {
+          console.log(`worker server is listening ${WORKER_PORT} port`);
+        });
+      }
+    }
+  } else {
+    const server = http.createServer(serverHandler);
+    server.listen(PORT, () => {
+      console.log(`server is listening ${PORT} port`);
     });
-    res.end(JSON.stringify({ message: "NOT FOUND" }));
   }
-  req.on("error", () => {
-    res.writeHead(500, "SERVER ERROR");
-    res.end();
-  });
-});
+}
 
-server.listen(PORT, () => {
-  console.log("listening on port 3003");
-});
+start();

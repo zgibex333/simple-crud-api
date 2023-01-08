@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx nodemon ./src/index.ts"
+    "start": "npx nodemon ./src/index.ts",
+    "start:multi": "npx nodemon ./src/index.ts -- --isMulti=true"
   },
   "author": "",
   "license": "ISC",
