@@ -3,6 +3,8 @@ import os from "os";
 import http from "http";
 import { redirectClient } from "./client";
 import { serverHandler } from "./serverHandler";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const PORT = Number(process.env.PORT) || 4000;
 
