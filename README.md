@@ -4,7 +4,7 @@
 > ```
 > git clone https://github.com/zgibex333/simple-crud-api.git
 > cd simple-crud-api
-> git checkout dev
+> git checkout features
 > npm install
 >
 > to start project in dev mode use "npm run start:dev"
