@@ -3,6 +3,7 @@
 > ## Installation and Start
 > ```
 > git clone https://github.com/zgibex333/simple-crud-api.git
+> cd simple-crud-api
 > git checkout dev
 > npm install
 >
