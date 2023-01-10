@@ -10,6 +10,7 @@
 > to start project in dev mode use "npm run start:dev"
 > to start project in multi mode use "npm run start:multi"
 > to start project in prod mode use "npm run start:prod"
+> to start tests in use "npm run test"
 > ```
 >&#8205; 
 
