@@ -2,6 +2,7 @@ import { User } from "../models/User";
 import { USERS_PATH_WITH_ID } from "../utils/patterns";
 import { Req, Res, UserType } from "../types";
 import { MESSAGES } from "../utils/messages";
+import { stringifyResponse } from "../utils/stringify";
 
 export const getAllUsers = async (req: Req, res: Res) => {
   try {
@@ -10,7 +11,7 @@ export const getAllUsers = async (req: Req, res: Res) => {
     res.end(JSON.stringify(users));
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
 };
 
@@ -19,21 +20,21 @@ export const getUserById = async (req: Req, res: Res) => {
     const isValid = USERS_PATH_WITH_ID.test(req.url!);
     if (!isValid) {
       res.writeHead(MESSAGES.INVALID_ID.code, MESSAGES.INVALID_ID.status);
-      res.end(MESSAGES.INVALID_ID.status);
+      res.end(stringifyResponse(MESSAGES.INVALID_ID.status));
       return;
     }
     const id = req.url?.split("/")[3]!;
     const user = await User.getUserById(id);
     if (!user) {
       res.writeHead(MESSAGES.DOESNT_EXIST.code, MESSAGES.DOESNT_EXIST.status);
-      res.end(MESSAGES.DOESNT_EXIST.status);
+      res.end(stringifyResponse(MESSAGES.DOESNT_EXIST.status));
       return;
     }
     res.writeHead(MESSAGES.SUCCESS.code, MESSAGES.SUCCESS.status);
     res.end(JSON.stringify(user));
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
 };
 
@@ -53,7 +54,7 @@ export const createUser = async (
     res.end(JSON.stringify(newUser));
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
 };
 
@@ -66,13 +67,13 @@ export const updateUser = async (
     const isValid = USERS_PATH_WITH_ID.test(req.url!);
     if (!isValid) {
       res.writeHead(MESSAGES.INVALID_ID.code, MESSAGES.INVALID_ID.status);
-      res.end(MESSAGES.INVALID_ID.status);
+      res.end(stringifyResponse(MESSAGES.INVALID_ID.status));
     } else {
       const id = req.url?.split("/")[3]!;
       const user = await User.getUserById(id);
       if (!user) {
         res.writeHead(MESSAGES.DOESNT_EXIST.code, MESSAGES.DOESNT_EXIST.status);
-        res.end(MESSAGES.DOESNT_EXIST.status);
+        res.end(stringifyResponse(MESSAGES.DOESNT_EXIST.status));
       } else {
         const { username, age, hobbies } = payload;
         const userData = {
@@ -87,7 +88,7 @@ export const updateUser = async (
     }
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
 };
 
@@ -96,14 +97,14 @@ export const deleteUser = async (req: Req, res: Res) => {
     const isValid = USERS_PATH_WITH_ID.test(req.url!);
     if (!isValid) {
       res.writeHead(MESSAGES.INVALID_ID.code, MESSAGES.INVALID_ID.status);
-      res.end(MESSAGES.INVALID_ID.status);
+      res.end(stringifyResponse(MESSAGES.INVALID_ID.status));
       return;
     }
     const id = req.url?.split("/")[3]!;
     const user = await User.getUserById(id);
     if (!user) {
       res.writeHead(MESSAGES.DOESNT_EXIST.code, MESSAGES.DOESNT_EXIST.status);
-      res.end(MESSAGES.DOESNT_EXIST.status);
+      res.end(stringifyResponse(MESSAGES.DOESNT_EXIST.status));
       return;
     }
     await User.deleteExisting(id);
@@ -111,6 +112,6 @@ export const deleteUser = async (req: Req, res: Res) => {
     res.end(JSON.stringify({ id }));
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end();
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
 };

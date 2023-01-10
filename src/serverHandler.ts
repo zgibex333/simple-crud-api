@@ -9,6 +9,8 @@ import { Req, Res, UserType } from "./types";
 import { getRequestBody } from "./utils/getRequestBody";
 import { logRequestAndPid } from "./utils/logger";
 import { MESSAGES } from "./utils/messages";
+import { stringifyResponse } from "./utils/stringify";
+import cluster from "node:cluster";
 
 function isPayloadType(o: any): o is Omit<UserType, "id"> {
   return (
@@ -27,12 +29,12 @@ function isPayloadType(o: any): o is Omit<UserType, "id"> {
 
 export const serverHandler = async (req: Req, res: Res) => {
   try {
-    logRequestAndPid(req);
+    if (cluster.isWorker) logRequestAndPid(req);
     res.setHeader("Content-Type", "application/json");
     const body = await getRequestBody(req);
     if (body === null) {
       res.writeHead(MESSAGES.JSON_ERROR.code, MESSAGES.JSON_ERROR.status);
-      res.end(MESSAGES.JSON_ERROR.status);
+      res.end(stringifyResponse(MESSAGES.JSON_ERROR.status));
       return;
     }
     const payload = JSON.parse(body);
@@ -50,7 +52,7 @@ export const serverHandler = async (req: Req, res: Res) => {
           MESSAGES.ALL_FIELDS_REQUIRED.code,
           MESSAGES.ALL_FIELDS_REQUIRED.status
         );
-        res.end(MESSAGES.ALL_FIELDS_REQUIRED.status);
+        res.end(stringifyResponse(MESSAGES.ALL_FIELDS_REQUIRED.status));
       }
       return;
     }
@@ -63,7 +65,7 @@ export const serverHandler = async (req: Req, res: Res) => {
           MESSAGES.ALL_FIELDS_REQUIRED.code,
           MESSAGES.ALL_FIELDS_REQUIRED.status
         );
-        res.end(MESSAGES.ALL_FIELDS_REQUIRED.status);
+        res.end(stringifyResponse(MESSAGES.ALL_FIELDS_REQUIRED.status));
       }
       return;
     }
@@ -79,13 +81,13 @@ export const serverHandler = async (req: Req, res: Res) => {
     }
 
     res.writeHead(MESSAGES.DOESNT_EXIST.code, MESSAGES.DOESNT_EXIST.status);
-    res.end(JSON.stringify({ message: "PATH NOT FOUND" }));
+    res.end(stringifyResponse(MESSAGES.WRONG_PATH.status));
   } catch {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   }
   req.on("error", () => {
     res.writeHead(MESSAGES.SERVER_ERROR.code, MESSAGES.SERVER_ERROR.status);
-    res.end(MESSAGES.SERVER_ERROR.status);
+    res.end(stringifyResponse(MESSAGES.SERVER_ERROR.status));
   });
 };

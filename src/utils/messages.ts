@@ -27,6 +27,10 @@ export const MESSAGES = {
     code: 400,
     status: "INVALID JSON",
   },
+  WRONG_PATH: {
+    code: 404,
+    status: "PATH NOT FOUND",
+  },
   SERVER_ERROR: {
     code: 500,
     status: "SERVER ERROR",
