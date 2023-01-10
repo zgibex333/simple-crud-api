@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest",
-    "start": "npx nodemon ./src/index.ts",
+    "start:dev": "npx nodemon ./src/index.ts",
     "start:multi": "npx nodemon ./src/index.ts -- --isMulti=true",
     "start:prod": "tsc && node ./build/index.js"
   },
