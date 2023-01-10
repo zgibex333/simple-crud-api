@@ -33,3 +33,14 @@
 > ```
 >
 > &#8205;
+
+
+> ## UUID
+>
+> ```
+> App supports only uuidV4 
+> Other versions are proceeded as invalid
+> ```
+>
+> &#8205;
+
